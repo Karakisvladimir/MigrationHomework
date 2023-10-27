@@ -1,7 +1,6 @@
 package client;
 
 import utils.Validator;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -84,6 +83,7 @@ public class ClientService {
 
     public void deleteById(long id) throws SQLException {
         deleteByIdSt.setLong(1, id);
+        deleteByIdSt.setLong(2, id);
         deleteByIdSt.executeUpdate();
     }
 
