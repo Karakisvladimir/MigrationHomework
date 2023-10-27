@@ -27,7 +27,8 @@ public class Main {
         String res = clientService.getById(1);
         System.out.println("res = " + res);
         // видаляє клієнта з ідентифікатором id
-        clientService.deleteById(2);
+
+        clientService.deleteById(1);
 
         clientService.printAllClients();
         connectionProvider.close();

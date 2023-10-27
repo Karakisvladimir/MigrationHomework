@@ -1,5 +1,7 @@
 package client;
 
+import utils.Validator;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,14 +20,23 @@ public class ClientService {
         createSt = connection.prepareStatement("INSERT INTO client (name) VALUES(?)");
         getByIdSt = connection.prepareStatement("SELECT * FROM client WHERE id = ?");
         setNameSt = connection.prepareStatement("UPDATE client SET name = ? WHERE id = ?");
-        deleteByIdSt = connection.prepareStatement("DELETE FROM client WHERE id = ?");
-        listAllSt =connection.prepareStatement("SELECT id, name FROM client");
+        deleteByIdSt = connection.prepareStatement("""                    
+
+                SET REFERENTIAL_INTEGRITY FALSE;
+                BEGIN TRANSACTION;
+                DELETE FROM client
+                   WHERE id IN (SELECT id FROM project WHERE id = ?);
+                DELETE FROM project WHERE client_id = ?;
+                SET REFERENTIAL_INTEGRITY TRUE  
+                    """);
+        listAllSt = connection.prepareStatement("SELECT id, name FROM client");
 
 
     }
 
     public long create(String name) {
-        //validateName(name);
+        Validator.validateName(name);
+
 
         try {
             createSt.setString(1, name);
@@ -71,8 +82,6 @@ public class ClientService {
     }
 
 
-
-
     public void deleteById(long id) throws SQLException {
         deleteByIdSt.setLong(1, id);
         deleteByIdSt.executeUpdate();
@@ -108,129 +117,3 @@ public class ClientService {
 }
 
 
-//  insertSt = conn.prepareStatement(
-//          "INSERT INTO human (name, birthday) VALUES(?, ?)"
-//          );
-//          selectByIdSt = conn.prepareStatement(
-//          "SELECT name, birthday FROM human WHERE id = ?"
-//          );
-//          selectAllSt = conn.prepareStatement("SELECT id FROM human");
-//
-//          renameSt = conn.prepareStatement("UPDATE human SET name = ? WHERE name = ?");
-//          }
-//
-//public void createNewHumans(String[] names, LocalDate[] birthdays) throws SQLException {
-//        for (int i = 0; i < names.length; i++) {
-//        String name = names[i];
-//        LocalDate birthday = birthdays[i];
-//
-//        insertSt.setString(1, name);
-//        insertSt.setString(2, birthday.toString());
-//
-//        insertSt.addBatch();
-//        }
-//
-//        insertSt.executeBatch();
-//        }
-//
-//public boolean createNewHuman(String name, LocalDate birthday) {
-//        try {
-//        insertSt.setString(1, name);
-//        insertSt.setString(2, birthday.toString());
-//        return insertSt.executeUpdate() == 1;
-//        } catch (Exception ex) {
-//        ex.printStackTrace();
-//        }
-//
-//        return false;
-//        }
-//
-//public String getHumanInfo(long id) {
-//        try {
-//        selectByIdSt.setLong(1, id);
-//        } catch (Exception ex) {
-//        ex.printStackTrace();
-//        return null;
-//        }
-//
-//        try(ResultSet rs = selectByIdSt.executeQuery()) {
-//        if (!rs.next()) {
-//        System.out.println("Human with id " + id + " not found!");
-//        return null;
-//        }
-//
-//        String name = rs.getString("name");
-//        String birthday = rs.getString("birthday");
-//
-//        return "name: " + name + ", birthday: " + birthday;
-//        } catch (Exception ex) {
-//        return null;
-//        }
-//        }
-//
-//public List<Long> getIds() {
-//        List<Long> result = new ArrayList<>();
-//
-//        try (ResultSet rs = selectAllSt.executeQuery()) {
-//        while(rs.next()) {
-//        result.add(rs.getLong("id"));
-//        }
-//        } catch (Exception ex) {
-//        ex.printStackTrace();
-//        }
-//
-//        return result;
-//        }
-//
-//
-//public void rename(Map<String, String> renameMap) throws SQLException {
-//        conn.setAutoCommit(false);
-//
-//        for (Map.Entry<String, String> keyValue : renameMap.entrySet()) {
-//        renameSt.setString(1, keyValue.getKey());
-//        renameSt.setString(2, keyValue.getKey());
-//
-//        renameSt.addBatch();
-//        }
-//
-//        try {
-//        renameSt.executeBatch();
-//
-//        conn.commit();
-//        } catch (Exception ex) {
-//        conn.rollback();
-//        } finally {
-//        conn.setAutoCommit(true);
-//        }
-//        }
-//        }
-
-
-//    public PassengerDaoService(Connection connection) throws SQLException {
-//        createSt = connection.prepareStatement("INSERT INTO passenger (passport, name) VALUES(?, ?)");
-//        getByPassportSt = connection.prepareStatement("SELECT id, name FROM passenger WHERE passport = ?");
-//    }
-//
-//    public void create(Passenger passenger) throws SQLException {
-//        createSt.setString(1, passenger.getPassport());
-//        createSt.setString(2, passenger.getName());
-//        createSt.executeUpdate();
-//    }
-//
-//    public Passenger getByPassport(String passport) throws SQLException {
-//        getByPassportSt.setString(1, passport);
-//
-//        try(ResultSet rs = getByPassportSt.executeQuery()) {
-//            if (!rs.next()) {
-//                return null;
-//            }
-//
-//            Passenger result = new Passenger();
-//            result.setId(rs.getLong("id"));
-//            result.setName(rs.getString("name"));
-//            result.setPassport(passport);
-//
-//            return result;
-//        }
-//    }
-//}
